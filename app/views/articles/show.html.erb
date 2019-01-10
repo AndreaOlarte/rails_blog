@@ -1,0 +1,22 @@
+<p id="notice"><%= notice %></p>
+
+<h2>
+  <%= @article.title %>
+</h2>
+
+<h5>
+  <%= @article.author.email %>
+</h5>
+
+<p>
+  <%= @article.created_at.strftime('%B %d, %Y') %>
+</p>
+
+<pre>
+  <%= @article.content %>
+</pre>
+
+<% if @article.author == current_user %>
+  <%= link_to 'Edit', edit_article_path(@article) %> |
+<% end %>
+<%= link_to 'Back', articles_path %>
