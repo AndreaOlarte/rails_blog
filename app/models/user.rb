@@ -9,4 +9,5 @@ class User < ApplicationRecord
   has_one_attached :avatar
 
   has_many :articles, foreign_key: :author_id
+  has_many :comments, dependent: :destroy
 end
