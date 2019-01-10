@@ -2,8 +2,7 @@
 
 class ArticlesController < ApplicationController
   before_action :authenticate_user!
-  before_action :obtain_article, only: :show
-  before_action :manipulate_article, only: [:edit, :update, :destroy]
+  before_action :find_own_article, only: %i[edit update destroy]
 
   # GET /articles
   def index
@@ -11,7 +10,10 @@ class ArticlesController < ApplicationController
   end
 
   # GET /articles/1
-  def show; end
+  def show
+    @article = Article.find(params[:id])
+    @comments = @article.comments
+  end
 
   # GET /articles/new
   def new
@@ -54,13 +56,9 @@ class ArticlesController < ApplicationController
   end
 
   private
-    # Obtains the given article to be shown.
-    def obtain_article
-      @article = Article.find(params[:id])
-    end
 
     # Obtains the given article only if its author is the current user 
-    def manipulate_article
+    def find_own_article
       @article = Article.where(author: current_user).find(params[:id])
     end
 

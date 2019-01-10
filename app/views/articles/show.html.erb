@@ -20,3 +20,16 @@
   <%= link_to 'Edit', edit_article_path(@article) %> |
 <% end %>
 <%= link_to 'Back', articles_path %>
+
+<% @comments.each do |comment| %>
+  <div>
+    <p><strong><%= comment.user.email %></strong></p>
+    <p><%= comment.created_at.strftime('%B %d, %Y') %></p>
+    <p><%= comment.content %></p>
+    <% if comment.user == current_user %>
+      <%= link_to 'Edit', edit_comment_path(comment) %>
+      <%= link_to 'Destroy', comment, method: :delete, data: { confirm: 'Are you sure?' } %>
+    <% end %>
+  </div>
+<% end %>
+<%= link_to 'New Comment', new_article_comment_path(@article) %>
