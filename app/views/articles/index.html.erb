@@ -16,7 +16,7 @@
     <% @articles.each do |article| %>
       <tr>
         <td><%= article.title %></td>
-        <td><%= article.author_id %></td>
+        <td><%= article.author.name %></td>
         <td><%= truncate(article.content, length: 150, separator: ' ') { link_to 'Continue', article } %></td>
         <td><%= link_to 'Show', article %></td>
         <% if article.author == current_user %>

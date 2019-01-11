@@ -5,7 +5,7 @@
 </h2>
 
 <h5>
-  <%= @article.author.email %>
+  <%= @article.author.name %>
 </h5>
 
 <p>
@@ -23,7 +23,7 @@
 
 <% @comments.each do |comment| %>
   <div>
-    <p><strong><%= comment.user.email %></strong></p>
+    <p><strong><%= comment.user.name %></strong></p>
     <p><%= comment.created_at.strftime('%B %d, %Y') %></p>
     <p><%= comment.content %></p>
     <% if comment.user == current_user %>
