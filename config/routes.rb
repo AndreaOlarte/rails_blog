@@ -5,4 +5,5 @@ Rails.application.routes.draw do
   resources :articles do
     resources :comments, shallow: true, except: %i[index show]
   end
+  get 'dashboard/index'
 end
