@@ -36,6 +36,7 @@ gem 'devise'
 # Use Bootstrap to add some styles
 gem 'bootstrap', '~> 4.2.1'
 gem 'jquery-rails'
+gem "font-awesome-rails"
 
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
