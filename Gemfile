@@ -33,6 +33,13 @@ gem 'mini_magick', '~> 4.8'
 # Use Devise authentication
 gem 'devise'
 
+# Use Bootstrap to add some styles
+gem 'bootstrap', '~> 4.2.1'
+gem 'jquery-rails'
+gem "font-awesome-rails"
+gem "haml-rails", "~> 1.0"
+
+
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
 

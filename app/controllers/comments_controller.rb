@@ -1,52 +1,41 @@
 class CommentsController < ApplicationController
-  before_action :authenticate_user!
   before_action :find_article, only: %i[new create]
-  before_action :find_comment, only: %i[edit update destroy]
+  before_action :find_own_comment, only: %i[edit update destroy]
 
-  # GET /comments/new
   def new
     @comment = @article.comments.new
   end
 
-  # GET /comments/1/edit
   def edit; end
 
-  # POST /comments
   def create
     @comment = @article.comments.new(comment_params)
 
-    respond_to do |format|
-      if @comment.save
-        format.html { redirect_to @article, notice: 'Comment was posted.' }
-      else
-        format.html { render :new }
-      end
+    if @comment.save
+      redirect_to @article, notice: 'Comment was posted.'
+    else
+      render :new
     end
   end
 
-  # PATCH/PUT /comments/1
   def update
-    respond_to do |format|
-      if @comment.update(comment_params)
-        format.html { redirect_to @comment.article, notice: 'Comment was edited.' }
-      else
-        format.html { render :edit }
-      end
+    if @comment.update(comment_params)
+      redirect_to @comment.article, notice: 'Comment was edited.'
+    else
+      render :edit
     end
   end
 
-  # DELETE /comments/1
   def destroy
     article = @comment.article
     @comment.destroy
-    respond_to do |format|
-      format.html { redirect_to article, notice: 'Comment was removed.' }
-    end
+    redirect_to article, notice: 'Comment was removed.'
   end
 
   private
-    def find_comment
-      @comment = Comment.find(params[:id])
+
+    def find_own_comment
+      @comment = current_user.comments.find(params[:id])
     end
     
     def find_article

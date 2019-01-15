@@ -1,0 +1,11 @@
+.container.pt-4.pb-3.d-flex.flex-column.justify-content-center.align-items-center{:style => "height: calc(100vh - 62px);"}
+  .w-50
+    .row.w-100
+      .col-md-12
+        %h1 Editing Comment
+        = fa_icon "arrow-left"
+        = link_to 'Back', @comment.article
+    .row.w-100
+      .col-md-12
+        = form_for @comment do |f|
+          = render 'form', form: f
