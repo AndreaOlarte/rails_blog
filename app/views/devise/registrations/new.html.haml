@@ -1,0 +1,33 @@
+.row.d-flex.align-items-center.justify-content-center.vh-100
+  .m-3.p-3.bg-light
+    %h2 Sign up
+    = form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f|
+      = devise_error_messages!
+      .wrapper.d-flex.justify-content-center
+        .wrapper-left.m-2
+          .field.form-group
+            = f.label :avatar
+            = f.file_field :avatar, autofocus: true, class: "form-control-file"
+          .field.form-group
+            = f.label :name
+            = f.text_field :name, class: "form-control"
+          .field.form-group
+            = f.label :description
+            = f.text_area :description, class: "form-control"
+        .separator.mx-2.border.border-secondary.bg-dark
+        .wrapper-right.m-2
+          .field.form-group
+            = f.label :email
+            = f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control"
+          .field.form-group
+            = f.label :password
+            - if @minimum_password_length
+              %em
+                (#{@minimum_password_length} characters minimum)
+            = f.password_field :password, autocomplete: "new-password", class: "form-control"
+          .field.form-group
+            = f.label :password_confirmation
+            = f.password_field :password_confirmation, autocomplete: "new-password", class: "form-control"
+          .actions
+            = f.submit "Sign up", class: "btn btn-danger"
+    = render "devise/shared/links"

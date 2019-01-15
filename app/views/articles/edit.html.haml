@@ -1,0 +1,12 @@
+.container.pt-4.pb-2
+  .row.mt-5
+    .col-md-12
+      %h1 Editing Article
+      %div
+        = fa_icon "arrow-left"
+        = link_to 'Back', :back
+        |
+        \#{fa_icon "eye"} #{link_to 'Show', @article}
+  .row.my-3
+    .col-md-12
+      = render 'form', article: @article
