@@ -1,69 +1,54 @@
 # frozen_string_literal: true
 
 class ArticlesController < ApplicationController
-  before_action :authenticate_user!
   before_action :find_own_article, only: %i[edit update destroy]
 
-  # GET /articles
   def index
-    @articles = Article.all
+    @articles = Article.all.order(created_at: :DESC)
   end
 
-  # GET /articles/1
   def show
     @article = Article.find(params[:id])
-    @comments = @article.comments
+    @comments = @article.comments.order(:created_at)
   end
 
-  # GET /articles/new
   def new
-    @article = Article.new
+    @article = current_user.articles.new
   end
 
-  # GET /articles/1/edit
   def edit; end
 
-  # POST /articles
   def create
-    @article = Article.new(article_params)
+    @article = current_user.articles.new(article_params)
 
-    respond_to do |format|
-      if @article.save
-        format.html { redirect_to @article, notice: 'Article was successfully created.' }
-      else
-        format.html { render :new }
-      end
+    if @article.save
+      redirect_to @article, notice: 'Article was successfully created.'
+    else
+      render :new
     end
   end
 
-  # PATCH/PUT /articles/1
   def update
-    respond_to do |format|
-      if @article.update(article_params)
-        format.html { redirect_to @article, notice: 'Article was successfully updated.' }
-      else
-        format.html { render :edit }
-      end
+    if @article.update(article_params)
+      redirect_to @article, notice: 'Article was successfully updated.'
+    else
+      render :edit
     end
   end
 
-  # DELETE /articles/1
   def destroy
     @article.destroy
-    respond_to do |format|
-      format.html { redirect_to articles_url, notice: 'Article was successfully destroyed.' }
-    end
+    redirect_to articles_url, notice: 'Article was successfully destroyed.'
   end
 
   private
 
     # Obtains the given article only if its author is the current user 
     def find_own_article
-      @article = Article.where(author: current_user).find(params[:id])
+      @article = current_user.articles.find(params[:id])
     end
 
-    # Article params.
     def article_params
-      params.require(:article).permit(:title, :content).merge(:author_id => current_user.id)
+      params.require(:article).permit(:title, :content)
     end
 end
