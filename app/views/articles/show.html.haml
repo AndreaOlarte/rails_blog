@@ -16,6 +16,8 @@
           - if @article.author == current_user
             = link_to 'Edit', edit_article_path(@article)
             |
+            = link_to 'Delete', @article, method: :delete, data: { confirm: 'Are you sure?' }
+            |
           = link_to 'Back', :back
   .row.my-3
     .col-md-12.d-flex.justify-content-center

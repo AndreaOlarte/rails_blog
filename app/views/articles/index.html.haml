@@ -24,6 +24,8 @@
             - if article.author == current_user
               = link_to edit_article_path(article) do
                 = fa_icon "edit"
+                Edit
               |
               = link_to article, method: :delete, data: { confirm: 'Are you sure?' } do
                 = fa_icon "trash"
+                Delete
