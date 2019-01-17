@@ -6,6 +6,7 @@ RSpec.describe Article, type: :model do
   let(:user) { FactoryBot.build(:user) }
 
   it { should belong_to(:author).class_name('User') }
+  it { should have_and_belong_to_many(:tags) }
   it { should have_many(:comments).dependent(:destroy) }
   it { should validate_presence_of(:content) }
   it { should validate_presence_of(:title) }
