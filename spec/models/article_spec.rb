@@ -3,29 +3,15 @@
 require 'rails_helper'
 
 RSpec.describe Article, type: :model do
-  let(:user) { User.create(email: 'trial@email.com', password: '123456', password_confirmation: '123456') }
-  describe 'valid article' do
-    let(:valid_article) do
-      Article.create(title: 'Title', content: 'Content', author_id: user.id)
-    end
+  let(:user) { FactoryBot.build(:user) }
 
-    it 'should include title' do
-      expect(valid_article).to be_valid
-    end
+  it { should belong_to(:author).class_name('User') }
+  it { should have_many(:comments).dependent(:destroy) }
+  it { should validate_presence_of(:content) }
+  it { should validate_presence_of(:title) }
+  it { should validate_length_of(:title).is_at_most(100) }
 
-    it 'should include content' do
-      expect(valid_article).to be_valid
-    end
-  end
-
-  describe 'invalid article' do
-    let(:invalid_article) { Article.create(title: nil, content: nil) }
-    it 'does not include title' do
-      expect(invalid_article).to_not be_valid
-    end
-
-    it 'does not include content' do
-      expect(invalid_article).to_not be_valid
-    end
+  it 'has a valid factory' do
+    expect(FactoryBot.build(:article, author: user)).to be_valid
   end
 end

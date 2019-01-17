@@ -3,118 +3,149 @@
 require 'rails_helper'
 
 RSpec.describe CommentsController, type: :controller do
+  let(:user) { FactoryBot.create(:user) }
+  let(:other_user) { FactoryBot.create(:user) }
+  let(:article) { FactoryBot.create(:article, author: other_user) }
+  let(:my_comment) { FactoryBot.create(:comment, article: article, user: user) }
+  let(:other_comment) { FactoryBot.create(:comment, article: article, user: other_user) }
+  before do
+    sign_in user
+  end
 
-  # This should return the minimal set of attributes required to create a valid
-  # Comment. As you add validations to Comment, be sure to
-  # adjust the attributes here as well.
-  let(:valid_attributes) {
-    skip("Add a hash of attributes valid for your model")
-  }
-
-  let(:invalid_attributes) {
-    skip("Add a hash of attributes invalid for your model")
-  }
-
-  # This should return the minimal set of values that should be in the session
-  # in order to pass any filters (e.g. authentication) defined in
-  # CommentsController. Be sure to keep this updated too.
-  let(:valid_session) { {} }
-
-  describe "GET #index" do
-    it "returns a success response" do
-      Comment.create! valid_attributes
-      get :index, params: {}, session: valid_session
+  describe 'GET #new' do
+    it 'returns a success response and renders the new view' do
+      get :new, params: { article_id: article.id }
       expect(response).to be_successful
+      expect(response).to render_template('new')
+    end
+
+    it 'finds the current article to comment in' do
+      get :new, params: { article_id: article.id }
+      expect(assigns(:article).id).to eq(article.id)
+    end
+
+    it 'creates a new instance of Comment' do
+      get :new, params: { article_id: article.id }
+      expect(assigns(:comment)).to be_a_new(Comment)
+    end
+
+    it 'creates the comment to belong to the current article' do
+      get :new, params: { article_id: article.id }
+      expect(assigns(:comment).article.id).to eq(article.id)
     end
   end
 
-  describe "GET #show" do
-    it "returns a success response" do
-      comment = Comment.create! valid_attributes
-      get :show, params: {id: comment.to_param}, session: valid_session
-      expect(response).to be_successful
+  describe 'POST #create' do
+    subject { post :create, params: {comment: params, article_id: article.id} }
+    context 'with valid params' do
+      let(:params) { FactoryBot.attributes_for(:comment) }
+
+      it 'finds the current article to create the comment in' do
+        subject
+        expect(assigns(:article)).to eq(article)
+      end
+
+      it 'creates a new comment' do
+        expect { subject }.to change(Comment, :count).by(1)
+      end
+    end
+
+    context 'with invalid params' do
+      let(:params) { FactoryBot.attributes_for(:comment, content: nil) }
+
+      it 'does not create a comment' do
+        expect { subject }.to change(Comment, :count).by(0)
+      end
+
+      it 'renders the new comment view' do
+        expect(subject).to render_template('new')
+      end
     end
   end
 
-  describe "GET #new" do
-    it "returns a success response" do
-      get :new, params: {}, session: valid_session
-      expect(response).to be_successful
+  describe 'GET #edit' do
+    context 'when is my comment' do
+      it 'returns a success response' do
+        get :edit, params: {id: my_comment.id}
+        expect(response).to be_successful
+        expect(response).to render_template('edit')
+      end
+
+      it 'finds it' do
+        get :edit, params: {id: my_comment.id}
+        expect(assigns(:comment)).to eq(my_comment)
+      end
+    end
+
+    context 'when is not my comment' do
+      it 'does not find it' do
+        expect { 
+          get :edit, params: {id: other_comment.id}
+        }.to raise_exception(ActiveRecord::RecordNotFound)
+      end
     end
   end
 
-  describe "GET #edit" do
-    it "returns a success response" do
-      comment = Comment.create! valid_attributes
-      get :edit, params: {id: comment.to_param}, session: valid_session
-      expect(response).to be_successful
+  describe 'PUT #update' do
+    context 'when is my comment' do
+      subject { put :update, params: {id: my_comment.id, comment: params} }
+      context 'with valid params' do
+        let(:params) { FactoryBot.attributes_for(:comment) }
+  
+        it 'finds and updates the requested comment' do
+          subject
+          my_comment.reload
+          expect(assigns(:comment)).to eq(my_comment)
+          expect(my_comment.content).to eq(params[:content])
+        end
+  
+        it 'returns a :found http status' do
+          expect(subject).to have_http_status(:found)
+        end
+      end
+  
+      context 'with invalid params' do
+        let(:params) { FactoryBot.attributes_for(:comment, content: nil) }
+
+        it 'does not apply any changes to the requested comment' do
+          subject
+          my_comment.reload
+          expect(my_comment.content).not_to eq(nil)
+        end
+
+        it 'renders the edit comment view' do
+          expect(subject).to render_template('edit')
+        end
+      end
+    end
+
+    context 'when is not my comment' do
+      subject { put :update, params: {id: other_comment.id, comment: params} }
+      let(:params) { FactoryBot.attributes_for(:comment) }
+
+      it 'does not find it to update' do
+        expect { subject }.to raise_exception(ActiveRecord::RecordNotFound)
+      end
     end
   end
 
-  describe "POST #create" do
-    context "with valid params" do
-      it "creates a new Comment" do
+  describe 'DELETE #destroy' do
+    context 'when is my comment' do
+      it 'finds and destroys the requested comment' do
+        my_second_comment = my_comment
         expect {
-          post :create, params: {comment: valid_attributes}, session: valid_session
-        }.to change(Comment, :count).by(1)
-      end
-
-      it "redirects to the created comment" do
-        post :create, params: {comment: valid_attributes}, session: valid_session
-        expect(response).to redirect_to(Comment.last)
+          delete :destroy, params: { id: my_second_comment.id }
+        }.to change(Comment, :count).by(-1)
       end
     end
 
-    context "with invalid params" do
-      it "returns a success response (i.e. to display the 'new' template)" do
-        post :create, params: {comment: invalid_attributes}, session: valid_session
-        expect(response).to be_successful
+    context 'when is not my comment' do
+      it 'does not find it to delete' do
+        another_comment = other_comment
+        expect { 
+          delete :destroy, params: {id: another_comment.id}
+        }.to raise_exception(ActiveRecord::RecordNotFound)
       end
     end
   end
-
-  describe "PUT #update" do
-    context "with valid params" do
-      let(:new_attributes) {
-        skip("Add a hash of attributes valid for your model")
-      }
-
-      it "updates the requested comment" do
-        comment = Comment.create! valid_attributes
-        put :update, params: {id: comment.to_param, comment: new_attributes}, session: valid_session
-        comment.reload
-        skip("Add assertions for updated state")
-      end
-
-      it "redirects to the comment" do
-        comment = Comment.create! valid_attributes
-        put :update, params: {id: comment.to_param, comment: valid_attributes}, session: valid_session
-        expect(response).to redirect_to(comment)
-      end
-    end
-
-    context "with invalid params" do
-      it "returns a success response (i.e. to display the 'edit' template)" do
-        comment = Comment.create! valid_attributes
-        put :update, params: {id: comment.to_param, comment: invalid_attributes}, session: valid_session
-        expect(response).to be_successful
-      end
-    end
-  end
-
-  describe "DELETE #destroy" do
-    it "destroys the requested comment" do
-      comment = Comment.create! valid_attributes
-      expect {
-        delete :destroy, params: {id: comment.to_param}, session: valid_session
-      }.to change(Comment, :count).by(-1)
-    end
-
-    it "redirects to the comments list" do
-      comment = Comment.create! valid_attributes
-      delete :destroy, params: {id: comment.to_param}, session: valid_session
-      expect(response).to redirect_to(comments_url)
-    end
-  end
-
 end

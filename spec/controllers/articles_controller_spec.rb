@@ -3,118 +3,155 @@
 require 'rails_helper'
 
 RSpec.describe ArticlesController, type: :controller do
+  let(:user) { FactoryBot.create(:user) }
+  let(:author) { FactoryBot.build(:user) }
+  let(:my_article) { FactoryBot.create(:article, author: user) }
+  let(:other_article) { FactoryBot.create(:article, author: author) }
+  before do
+    sign_in user
+  end
 
-  # This should return the minimal set of attributes required to create a valid
-  # Article. As you add validations to Article, be sure to
-  # adjust the attributes here as well.
-  let(:valid_attributes) {
-    skip("Add a hash of attributes valid for your model")
-  }
+  describe 'GET #index' do
+    it 'is successful and renders the article index view' do
+      get :index
+      expect(response).to render_template('index')
+    end
 
-  let(:invalid_attributes) {
-    skip("Add a hash of attributes invalid for your model")
-  }
-
-  # This should return the minimal set of values that should be in the session
-  # in order to pass any filters (e.g. authentication) defined in
-  # ArticlesController. Be sure to keep this updated too.
-  let(:valid_session) { {} }
-
-  describe "GET #index" do
-    it "returns a success response" do
-      Article.create! valid_attributes
-      get :index, params: {}, session: valid_session
-      expect(response).to be_successful
+    it 'shows all the articles' do
+      get :index
+      expect(assigns(:articles).count).to eq(Article.count)
     end
   end
 
-  describe "GET #show" do
-    it "returns a success response" do
-      article = Article.create! valid_attributes
-      get :show, params: {id: article.to_param}, session: valid_session
-      expect(response).to be_successful
+  describe 'GET #show' do
+    it 'is successful and renders the show article view' do
+      get :show, params: {id: other_article.id}
+      expect(response).to render_template('show')
+    end
+
+    it 'finds the article and shows all its comments' do
+      get :show, params: {id: other_article.id}
+      expect(assigns(:article).id).to eq(other_article.id)
+      expect(assigns(:article).comments.count).to eq(other_article.comments.count)
     end
   end
 
-  describe "GET #new" do
-    it "returns a success response" do
-      get :new, params: {}, session: valid_session
-      expect(response).to be_successful
+  describe 'GET #new' do
+    it 'is successful and renders the new article view' do
+      get :new
+      expect(response).to render_template('new')
+    end
+
+    it 'creates a new instance of Article belonging to the current user' do
+      get :new
+      expect(assigns(:article)).to be_a_new(Article)
+      expect(assigns(:article).author.id).to eq(user.id)
     end
   end
 
-  describe "GET #edit" do
-    it "returns a success response" do
-      article = Article.create! valid_attributes
-      get :edit, params: {id: article.to_param}, session: valid_session
-      expect(response).to be_successful
+  describe 'POST #create' do
+    subject { post :create, params: {article: params} }
+    context 'with valid params' do
+      let(:params) { FactoryBot.attributes_for(:article) }
+      it 'creates a new Article belonging to the current user' do
+        expect { subject }.to change(Article, :count).by(1)
+        expect(assigns(:article).author.id).to eq(user.id)
+      end
+    end
+
+    context 'with invalid params' do
+      let(:params) { FactoryBot.attributes_for(:article, title: nil, content: nil) }
+
+      it 'does not create an Article' do
+        expect { subject }.to change(Article, :count).by(0)
+      end
+
+      it 'renders the new article view' do
+        expect(subject).to render_template('new')
+      end
     end
   end
 
-  describe "POST #create" do
-    context "with valid params" do
-      it "creates a new Article" do
+  describe 'GET #edit' do
+    context 'when is my article' do
+      it 'is successful and renders the edit article view' do
+        get :edit, params: {id: my_article.id}
+        expect(response).to render_template('edit')
+      end
+
+      it 'finds it' do
+        get :edit, params: {id: my_article.id}
+        expect(assigns(:article)).to eq(my_article)
+      end
+    end
+
+    context 'when is not my article' do
+      it 'does not findt it' do
+        expect { 
+          get :edit, params: {id: other_article.id}
+        }.to raise_exception(ActiveRecord::RecordNotFound)
+      end
+    end
+  end
+
+  describe 'PUT #update' do
+    context 'when is my article' do
+      subject { put :update, params: {id: my_article.id, article: params} }
+      context 'with valid params' do
+        let(:params) { FactoryBot.attributes_for(:article) }
+  
+        it 'finds and updates the requested article' do
+          subject
+          my_article.reload
+          expect(assigns(:article)).to eq(my_article)
+          expect(my_article.title).to eq(params[:title])
+        end
+  
+        it 'returns a :found http status' do
+          expect(subject).to have_http_status(:found)
+        end
+      end
+  
+      context 'with invalid params' do
+        let(:params) { FactoryBot.attributes_for(:article, title: nil) }
+        it 'does not apply any changes to the requested article' do
+          subject
+          my_article.reload
+          expect(my_article.title).not_to eq(nil)
+        end
+
+        it 'renders the edit article view' do
+          expect(subject).to render_template('edit')
+        end
+      end
+    end
+
+    context 'when is not my article' do
+      subject { put :update, params: {id: other_article.id, article: params} }
+      let(:params) { FactoryBot.attributes_for(:article) }
+      it 'does not find the article to update' do
+        expect { subject }.to raise_exception(ActiveRecord::RecordNotFound)
+      end
+    end
+  end
+
+  describe 'DELETE #destroy' do
+    context 'when is my article' do
+      it 'finds and destroys the requested article' do
+        my_second_article = my_article
         expect {
-          post :create, params: {article: valid_attributes}, session: valid_session
-        }.to change(Article, :count).by(1)
-      end
-
-      it "redirects to the created article" do
-        post :create, params: {article: valid_attributes}, session: valid_session
-        expect(response).to redirect_to(Article.last)
+          delete :destroy, params: { id: my_second_article.id }
+        }.to change(Article, :count).by(-1)
       end
     end
 
-    context "with invalid params" do
-      it "returns a success response (i.e. to display the 'new' template)" do
-        post :create, params: {article: invalid_attributes}, session: valid_session
-        expect(response).to be_successful
+    context 'when is not my article' do
+      it 'does not find the article to delete' do
+        another_article = other_article
+        expect {
+          delete :destroy, params: { id: another_article.id }
+        }.to raise_exception(ActiveRecord::RecordNotFound)
       end
     end
   end
-
-  describe "PUT #update" do
-    context "with valid params" do
-      let(:new_attributes) {
-        skip("Add a hash of attributes valid for your model")
-      }
-
-      it "updates the requested article" do
-        article = Article.create! valid_attributes
-        put :update, params: {id: article.to_param, article: new_attributes}, session: valid_session
-        article.reload
-        skip("Add assertions for updated state")
-      end
-
-      it "redirects to the article" do
-        article = Article.create! valid_attributes
-        put :update, params: {id: article.to_param, article: valid_attributes}, session: valid_session
-        expect(response).to redirect_to(article)
-      end
-    end
-
-    context "with invalid params" do
-      it "returns a success response (i.e. to display the 'edit' template)" do
-        article = Article.create! valid_attributes
-        put :update, params: {id: article.to_param, article: invalid_attributes}, session: valid_session
-        expect(response).to be_successful
-      end
-    end
-  end
-
-  describe "DELETE #destroy" do
-    it "destroys the requested article" do
-      article = Article.create! valid_attributes
-      expect {
-        delete :destroy, params: {id: article.to_param}, session: valid_session
-      }.to change(Article, :count).by(-1)
-    end
-
-    it "redirects to the articles list" do
-      article = Article.create! valid_attributes
-      delete :destroy, params: {id: article.to_param}, session: valid_session
-      expect(response).to redirect_to(articles_url)
-    end
-  end
-
 end
