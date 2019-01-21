@@ -7,6 +7,7 @@ RSpec.describe ArticlesController, type: :controller do
   let(:author) { FactoryBot.build(:user) }
   let(:my_article) { FactoryBot.create(:article, author: user) }
   let(:other_article) { FactoryBot.create(:article, author: author) }
+  let(:tag) { FactoryBot.create(:tag) }
   before do
     sign_in user
   end
@@ -52,7 +53,7 @@ RSpec.describe ArticlesController, type: :controller do
   describe 'POST #create' do
     subject { post :create, params: {article: params} }
     context 'with valid params' do
-      let(:params) { FactoryBot.attributes_for(:article) }
+      let(:params) { FactoryBot.attributes_for(:article, tag_ids: [tag.id]) }
       it 'creates a new Article belonging to the current user' do
         expect { subject }.to change(Article, :count).by(1)
         expect(assigns(:article).author.id).to eq(user.id)
@@ -98,13 +99,14 @@ RSpec.describe ArticlesController, type: :controller do
     context 'when is my article' do
       subject { put :update, params: {id: my_article.id, article: params} }
       context 'with valid params' do
-        let(:params) { FactoryBot.attributes_for(:article) }
+        let(:params) { FactoryBot.attributes_for(:article, tag_ids: [tag.id]) }
   
         it 'finds and updates the requested article' do
           subject
           my_article.reload
           expect(assigns(:article)).to eq(my_article)
           expect(my_article.title).to eq(params[:title])
+          expect(my_article.tags.first.category).to eq(tag.category)
         end
   
         it 'returns a :found http status' do

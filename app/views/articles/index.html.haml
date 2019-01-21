@@ -21,6 +21,11 @@
                 = fa_icon "calendar"
                 = article.created_at.strftime('%b %-d, %Y')
             %p.card-text.text-justify= truncate(article.content, length: 200, separator: ' ') { link_to 'Continue', article }
+            - unless article.tags.empty? 
+              .div.d-flex.justify-content-end
+                - article.tags.each do |t|
+                  .px-2.py-1.m-1.border.border-danger.rounded.text-danger
+                    = t.category
             - if article.author == current_user
               = link_to edit_article_path(article) do
                 = fa_icon "edit"

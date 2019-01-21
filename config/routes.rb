@@ -6,5 +6,8 @@ Rails.application.routes.draw do
   resources :articles do
     resources :comments, shallow: true, except: %i[index show]
   end
-  get 'dashboard/index'
+  resources :dashboard, only: %i[index]
+  namespace :admin do
+    resources :tags, only: %i[create update destroy]
+  end
 end
