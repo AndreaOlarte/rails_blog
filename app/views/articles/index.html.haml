@@ -8,29 +8,4 @@
         = link_to 'Write New Article', new_article_path
   .row
     .col-md-12
-      - @articles.each do |article|
-        .card.mb-3.p-2
-          .card-body
-            = link_to article, class: "text-decoration-none" do
-              %h4.card-title= article.title
-            %p.card-text
-              %small.mr-3
-                = fa_icon "user"
-                = article.author.name
-              %small.text-muted
-                = fa_icon "calendar"
-                = article.created_at.strftime('%b %-d, %Y')
-            %p.card-text.text-justify= truncate(article.content, length: 200, separator: ' ') { link_to 'Continue', article }
-            - unless article.tags.empty? 
-              .div.d-flex.justify-content-end
-                - article.tags.each do |t|
-                  .px-2.py-1.m-1.border.border-danger.rounded.text-danger
-                    = t.category
-            - if article.author == current_user
-              = link_to edit_article_path(article) do
-                = fa_icon "edit"
-                Edit
-              |
-              = link_to article, method: :delete, data: { confirm: 'Are you sure?' } do
-                = fa_icon "trash"
-                Delete
+      = render partial: 'article', collection: @articles

@@ -11,6 +11,9 @@
     = form.label :title, class: "h4"
     = form.text_field :title, class: "form-control"
   .field.form-group
+    = form.label :picture, class: "h4"
+    = form.file_field :picture, class: "form-control-file"
+  .field.form-group
     = form.label :content, class: "h4"
     = form.text_area :content, class: "form-control article-content", rows: 24
   .field.form-group

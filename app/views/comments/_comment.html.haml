@@ -1,0 +1,17 @@
+.bg-light.p-3.my-3.w-75
+  .comment-header.d-flex.justify-content-between
+    %p
+      %strong.mr-3.d-block
+        = fa_icon "user"
+        = comment.user.name
+      %span.text-muted.d-block
+        = fa_icon "calendar"
+        = comment.created_at.strftime('%b %-d, %Y')
+    - if comment.user == current_user
+      %div
+        = link_to edit_comment_path(comment) do
+          = fa_icon "edit"
+        |
+        = link_to comment, method: :delete, data: { confirm: 'Delete comment?' } do
+          = fa_icon "trash"
+  %p= comment.content
