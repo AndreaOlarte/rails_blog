@@ -1,0 +1,11 @@
+= form_for [:admin, tag], html: { class: 'form-inline' } do |form|
+  - if tag.errors.any?
+    #error_explanation
+      %h2= "#{pluralize(tag.errors.count, "error")} prohibited this tag from being saved:"
+      %ul
+        - tag.errors.full_messages.each do |message|
+          %li= message
+  .field.form-group
+    = form.text_field :category, class: 'form-control m-1', placeholder: 'Category'
+  .actions
+    = form.submit 'Save', class: 'btn btn-danger'

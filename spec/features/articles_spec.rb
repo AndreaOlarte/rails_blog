@@ -7,6 +7,7 @@ RSpec.feature Article, type: :feature do
   let!(:user_two) { FactoryBot.create(:user) }
   let!(:article_one) { FactoryBot.create(:article, author: user_one) }
   let!(:article_two) { FactoryBot.create(:article, author: user_two) }
+  let!(:tag) { FactoryBot.create(:tag) }
 
   before do
     login_as(user_one)
@@ -16,11 +17,13 @@ RSpec.feature Article, type: :feature do
   describe 'a logged user' do
     scenario 'can create articles' do
       click_link 'Write New Article'
-      article = FactoryBot.attributes_for(:article)
+      article = FactoryBot.attributes_for(:article, tag_ids: [tag.id])
       fill_in 'Title', with: article[:title]
       fill_in 'Content', with: article[:content]
+      check tag.category
       click_button 'Save'
       expect(page).to have_content(article[:title])
+      expect(page).to have_content(tag.category)
       expect(page).to have_content('Write a comment')
     end
 
@@ -36,6 +39,7 @@ RSpec.feature Article, type: :feature do
       click_link 'Edit'
       article = FactoryBot.attributes_for(:article)
       fill_in 'Title', with: article[:title]
+      check tag.category
       click_button 'Save'
       expect(page).to have_content(article[:title])
       expect(page).to have_content('Write a comment')

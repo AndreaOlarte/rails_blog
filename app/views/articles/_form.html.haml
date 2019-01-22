@@ -13,5 +13,11 @@
   .field.form-group
     = form.label :content, class: "h4"
     = form.text_area :content, class: "form-control article-content", rows: 24
+  .field.form-group
+    = form.label :tag_ids, 'Tags', class: 'h5 mr-4'
+    = form.collection_check_boxes :tag_ids, Tag.all, :id, :category, class: 'form-check form-check-inline' do |t|
+      = t.label(class: 'form-check form-check-inline') do
+        = t.check_box
+        = t.text
   .actions
     = form.submit "Save", class: "btn btn-danger"
