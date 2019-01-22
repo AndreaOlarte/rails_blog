@@ -1,0 +1,19 @@
+.col-md-3.text-center.bg-light.p-4.pt-5{:style => "min-height: 100vh;"}
+  .profile.mb-4
+    %h2.m-5.pt-2 My Profile
+    - unless current_user.avatar.attachment.nil?
+      = image_tag current_user.avatar.variant(resize: "200x200"), class: "mb-3"
+    %p
+      = current_user.name
+    %p
+      = current_user.email
+    %p
+      = current_user.description
+    = link_to "Edit Profile", edit_user_registration_path(current_user)
+  - if current_user.admin?
+    .tags
+      %h2 Tags
+      = render 'admin/tags/form', tag: tag
+      %table.table.table-hover.mt-3.px-2
+        %tbody
+          = display_tags(tags, tag)
